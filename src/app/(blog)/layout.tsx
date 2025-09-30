@@ -1,4 +1,4 @@
-import { Layout, Navbar } from "nextra-theme-blog";
+import { Layout } from "nextra-theme-blog";
 import "nextra-theme-blog/style.css";
 import "./../globals.css";
 import ActiveMetadata from "@/components/activeMetadata";
