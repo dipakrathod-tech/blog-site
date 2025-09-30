@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { HoverBorderGradient } from "./hover-border-gradient";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function Newsletter({ className }: { className?: string }) {
@@ -49,14 +49,9 @@ export default function Newsletter({ className }: { className?: string }) {
           required
           className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
-        <HoverBorderGradient
-          type="submit"
-          containerClassName="rounded-md"
-          className="px-3 py-2 text-sm font-medium"
-          aria-label="Subscribe"
-        >
+        <Button type="submit" size="sm" aria-label="Subscribe">
           {status === "loading" ? "..." : "Subscribe"}
-        </HoverBorderGradient>
+        </Button>
       </form>
 
       {status === "success" && (
