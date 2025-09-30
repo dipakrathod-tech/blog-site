@@ -121,11 +121,15 @@
   }
 }
 
-
 @layer overrides {
   .x\:prose {
     /* allow prose to use full width of its container and add a small outer margin */
     max-width: 80% !important;
   }
 
+  /* Nextra theme sets large vertical padding on article; override to remove it */
+  article {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
 }
