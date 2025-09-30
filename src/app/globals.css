@@ -120,3 +120,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer overrides {
+  .x\:prose {
+    /* allow prose to use full width of its container and add a small outer margin */
+    max-width: 80% !important;
+  }
+
+}
