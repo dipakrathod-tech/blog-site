@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
 import Image from "next/image";
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface Avatar {
-  imageUrl: string
-  profileUrl: string
+  imageUrl: string;
+  profileUrl: string;
 }
 interface AvatarCirclesProps {
-  className?: string
-  numPeople?: number
-  avatarUrls: Avatar[]
+  className?: string;
+  numPeople?: number;
+  avatarUrls: Avatar[];
 }
 
 export const AvatarCircles = ({
@@ -45,5 +45,5 @@ export const AvatarCircles = ({
         </a>
       )}
     </div>
-  )
-}
+  );
+};
