@@ -13,8 +13,6 @@ export default function ActiveAuthorHeader() {
   }
 
   return (
-    <div className="mb-6">
       <AuthorHeader />
-    </div>
   );
 }

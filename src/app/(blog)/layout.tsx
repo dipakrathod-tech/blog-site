@@ -16,7 +16,6 @@ export default async function RootLayout({
 }) {
   return (
     <Layout>
-      <ActiveAuthorHeader />
       {/* <ActiveMetadata />  */}
       {children}
       <Giscus />

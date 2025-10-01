@@ -10,7 +10,12 @@ interface SocialLink {
   label: string;
 }
 
-export default function AuthorHeader({ className }: { className?: string }) {
+interface AuthorHeaderProps {
+  className?: string;
+  date?: Date | string;
+}
+
+export default function AuthorHeader({ className, date }: AuthorHeaderProps) {
   const avatars = [
     {
       imageUrl: authorData.avatar ?? "/file.svg",
@@ -24,6 +29,15 @@ export default function AuthorHeader({ className }: { className?: string }) {
     { href: authorData.socials.linkedin, label: "LinkedIn" },
   ];
 
+  // Format the date
+  const formattedDate = date
+    ? new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
   return (
     <section
       className={"flex items-center justify-between " + (className ?? "")}
@@ -32,7 +46,15 @@ export default function AuthorHeader({ className }: { className?: string }) {
         <AvatarCircles avatarUrls={avatars} />
         <div>
           <div className="text-sm font-semibold">{authorData.name}</div>
-          <div className="text-xs text-muted-foreground">{authorData.role}</div>
+          <div className="text-xs text-muted-foreground">
+            {formattedDate && (
+              <>
+                <time dateTime={new Date(date!).toISOString()}>
+                  {formattedDate}
+                </time>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
