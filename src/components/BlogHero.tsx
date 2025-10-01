@@ -26,7 +26,7 @@ export default function BlogHero() {
 
   return (
     <section className="relative w-full min-h-[calc(100vh-72px)] flex items-center overflow-hidden py-8 md:py-12">
-      <div className="container mx-auto px-6 md:px-8 lg:px-12">
+      <div className="max-w-[95%] mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Side - Content */}
           <div className="space-y-6 z-10">

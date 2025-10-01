@@ -13,7 +13,7 @@ export default function CustomFooter({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="mx-4 px-6 py-12">
+      <div className="max-w-[95%] mx-auto py-12">
         <div className="md:flex md:items-start md:justify-between gap-8">
           <div className="flex-1">
             <h2 className="text-lg font-semibold">Dipak Rathod</h2>
