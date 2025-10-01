@@ -5,7 +5,7 @@ import { CustomNavbar as Navbar } from "./CustomNavbar";
 
 export default async function CustomNavbar() {
   return (
-    <nav className=" mx-17.5 pt-4">
+    <nav className="px-4 py-4 border-b border-border shadow-sm">
       <Navbar pageMap={await getPageMap()}>
         <Search />
         <ThemeSwitch />

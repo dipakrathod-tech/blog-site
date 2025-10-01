@@ -11,7 +11,7 @@ export default function CustomFooter({ className }: { className?: string }) {
     <footer
       className={cn("border-t border-muted/40 bg-background/50 mt-12", className)}
     >
-      <div className="mx-auto max-w-6xl px-6 py-12">
+      <div className="mx-4 px-6 py-12">
         <div className="md:flex md:items-start md:justify-between gap-8">
           <div className="flex-1">
             <h2 className="text-lg font-semibold">Dipak Rathod</h2>
