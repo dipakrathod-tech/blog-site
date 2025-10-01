@@ -1,0 +1,430 @@
+---
+title: Kubernetes Deployment Strategies
+date: 2025-01-01
+tags: ["Kubernetes", "DevOps", "Cloud Native"]
+description: Learn advanced deployment strategies in Kubernetes including rolling updates, blue-green deployments, and canary releases for zero-downtime deployments.
+---
+
+# Kubernetes Deployment Strategies
+
+Kubernetes offers powerful deployment strategies that enable zero-downtime releases, easy rollbacks, and progressive delivery. This guide explores the most effective deployment patterns for production environments.
+
+## Why Deployment Strategies Matter
+
+Modern applications require:
+
+- **Zero downtime** during updates
+- **Quick rollback** capabilities
+- **Gradual rollouts** to minimize risk
+- **Testing in production** safely
+- **High availability** throughout deployments
+
+## Rolling Updates (Default)
+
+The default Kubernetes deployment strategy gradually replaces old pods with new ones.
+
+### Configuration
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2 # Max pods above desired count
+      maxUnavailable: 1 # Max pods unavailable during update
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: app
+          image: my-app:2.0
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+```
+
+### Deploy and Monitor
+
+```bash
+# Apply the deployment
+kubectl apply -f deployment.yaml
+
+# Watch the rollout
+kubectl rollout status deployment/my-app
+
+# Check deployment history
+kubectl rollout history deployment/my-app
+
+# Rollback if needed
+kubectl rollout undo deployment/my-app
+```
+
+### Pros and Cons
+
+**Pros:**
+
+- Simple and built-in
+- Automatic rollback on failure
+- Resource efficient
+
+**Cons:**
+
+- Both versions run simultaneously
+- Can't test before full rollout
+- Gradual user impact
+
+## Blue-Green Deployment
+
+Run two identical environments (blue and green), switching traffic instantly between them.
+
+### Setup with Services
+
+```yaml
+# Blue deployment (current production)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: blue
+    spec:
+      containers:
+        - name: app
+          image: my-app:1.0
+          ports:
+            - containerPort: 8080
+---
+# Green deployment (new version)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: green
+    spec:
+      containers:
+        - name: app
+          image: my-app:2.0
+          ports:
+            - containerPort: 8080
+---
+# Service (controls which version receives traffic)
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+    version: blue # Change to 'green' to switch
+  ports:
+    - port: 80
+      targetPort: 8080
+```
+
+### Switching Traffic
+
+```bash
+# Deploy green (new version)
+kubectl apply -f deployment-green.yaml
+
+# Test green internally
+kubectl port-forward deployment/my-app-green 8080:8080
+
+# Switch traffic to green
+kubectl patch service my-app-service -p '{"spec":{"selector":{"version":"green"}}}'
+
+# Monitor and rollback if needed
+kubectl patch service my-app-service -p '{"spec":{"selector":{"version":"blue"}}}'
+
+# Clean up old deployment
+kubectl delete deployment my-app-blue
+```
+
+### Pros and Cons
+
+**Pros:**
+
+- Instant rollback
+- Full testing before switch
+- Zero downtime
+
+**Cons:**
+
+- Requires 2x resources
+- Database migrations complex
+- All users switch at once
+
+## Canary Deployment
+
+Gradually shift traffic from old to new version, monitoring metrics before full rollout.
+
+### Using Kubernetes Services
+
+```yaml
+# Stable deployment (90% traffic)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-stable
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: my-app
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: my-app
+        track: stable
+    spec:
+      containers:
+        - name: app
+          image: my-app:1.0
+---
+# Canary deployment (10% traffic)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: my-app
+        track: canary
+    spec:
+      containers:
+        - name: app
+          image: my-app:2.0
+---
+# Service (load balances across both)
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+spec:
+  selector:
+    app: my-app # Selects both stable and canary
+  ports:
+    - port: 80
+      targetPort: 8080
+```
+
+### Progressive Rollout
+
+```bash
+# Start with 10% canary
+kubectl apply -f canary-deployment.yaml
+
+# Monitor metrics
+kubectl top pods -l track=canary
+kubectl logs -f deployment/my-app-canary
+
+# Increase to 50%
+kubectl scale deployment my-app-stable --replicas=5
+kubectl scale deployment my-app-canary --replicas=5
+
+# Full rollout
+kubectl scale deployment my-app-stable --replicas=0
+kubectl scale deployment my-app-canary --replicas=10
+
+# Clean up
+kubectl delete deployment my-app-stable
+kubectl label deployment my-app-canary track=stable
+```
+
+## Advanced: Flagger for Automated Canary
+
+Flagger automates canary deployments with metrics analysis:
+
+```yaml
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: my-app
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-app
+  service:
+    port: 8080
+  analysis:
+    interval: 1m
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 1m
+  webhooks:
+    - name: load-test
+      url: http://flagger-loadtester/
+      metadata:
+        cmd: "hey -z 1m -q 10 -c 2 http://my-app-canary:8080/"
+```
+
+## A/B Testing
+
+Route users based on headers or cookies:
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: my-app
+spec:
+  hosts:
+    - my-app
+  http:
+    - match:
+        - headers:
+            user-agent:
+              regex: ".*Mobile.*"
+      route:
+        - destination:
+            host: my-app
+            subset: v2
+    - route:
+        - destination:
+            host: my-app
+            subset: v1
+```
+
+## Best Practices
+
+### 1. Always Use Health Checks
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+```
+
+### 2. Implement Graceful Shutdown
+
+```go
+// Go example
+func main() {
+    server := &http.Server{Addr: ":8080"}
+
+    go func() {
+        if err := server.ListenAndServe(); err != nil {
+            log.Fatal(err)
+        }
+    }()
+
+    // Wait for interrupt
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+    <-quit
+
+    // Graceful shutdown
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+
+    if err := server.Shutdown(ctx); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### 3. Use PreStop Hooks
+
+```yaml
+lifecycle:
+  preStop:
+    exec:
+      command: ["/bin/sh", "-c", "sleep 15"]
+```
+
+### 4. Monitor Key Metrics
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+```
+
+## Deployment Strategy Decision Matrix
+
+| Strategy       | Downtime | Rollback Speed | Resource Cost | Complexity | Best For        |
+| -------------- | -------- | -------------- | ------------- | ---------- | --------------- |
+| Rolling Update | None     | Fast           | Low           | Low        | Most cases      |
+| Blue-Green     | None     | Instant        | High (2x)     | Medium     | Critical apps   |
+| Canary         | None     | Medium         | Medium        | High       | Risk mitigation |
+| A/B Testing    | None     | Instant        | Medium        | High       | Feature testing |
+
+## Conclusion
+
+Choosing the right deployment strategy depends on your:
+
+- **Application criticality** - how important is instant rollback?
+- **Resource availability** - can you afford 2x infrastructure?
+- **Team expertise** - do you have monitoring and automation?
+- **Release frequency** - how often do you deploy?
+
+Start with rolling updates, and graduate to more sophisticated strategies as your needs grow. The key is to deploy confidently with the ability to rollback quickly if issues arise.
+
+Remember: The best deployment is one that your team can execute reliably and safely!

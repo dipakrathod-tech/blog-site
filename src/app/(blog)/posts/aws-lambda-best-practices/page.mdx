@@ -1,0 +1,975 @@
+---
+title: AWS Lambda Functions - Best Practices
+date: 2025-01-05
+tags: ["AWS", "Lambda", "Serverless"]
+description: Discover the best practices for building scalable serverless applications with AWS Lambda and optimizing cost efficiency.
+---
+
+# AWS Lambda Functions: Best Practices
+
+AWS Lambda has transformed how we build and deploy applications, enabling true serverless architecture. This guide covers essential best practices for building production-ready Lambda functions.
+
+## What is AWS Lambda?
+
+AWS Lambda is a serverless compute service that runs your code in response to events. You only pay for the compute time you consume - there's no charge when your code isn't running.
+
+### Key Benefits
+
+- **No server management** - AWS handles infrastructure
+- **Automatic scaling** - scales with demand
+- **Pay per use** - only pay for compute time
+- **Event-driven** - integrates with 200+ AWS services
+- **Built-in fault tolerance** - automatic failover
+
+## Getting Started
+
+### Your First Lambda Function
+
+```javascript
+// index.js
+export const handler = async (event) => {
+  console.log("Event:", JSON.stringify(event, null, 2));
+
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Hello from Lambda!",
+      input: event,
+    }),
+  };
+
+  return response;
+};
+```
+
+### Using TypeScript
+
+```typescript
+// handler.ts
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
+export const handler = async (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  const { body, headers } = event;
+
+  try {
+    const data = JSON.parse(body || "{}");
+
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: "Success",
+        data,
+      }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        error: "Invalid request",
+      }),
+    };
+  }
+};
+```
+
+## Best Practices
+
+### 1. Optimize Cold Start Performance
+
+**Keep dependencies minimal:**
+
+```typescript
+// Bad - imports entire AWS SDK
+import AWS from "aws-sdk";
+
+// Good - import only what you need
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { S3Client } from "@aws-sdk/client-s3";
+```
+
+**Initialize outside the handler:**
+
+```typescript
+// Initialize once (outside handler)
+const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
+
+export const handler = async (event) => {
+  // Use initialized client
+  const result = await dynamoClient.send(command);
+  return result;
+};
+```
+
+### 2. Environment Variables
+
+```typescript
+// Secure and configurable
+const TABLE_NAME = process.env.TABLE_NAME;
+const API_KEY = process.env.API_KEY;
+const ENVIRONMENT = process.env.ENVIRONMENT || "development";
+
+export const handler = async (event) => {
+  if (!TABLE_NAME) {
+    throw new Error("TABLE_NAME not configured");
+  }
+
+  // Use environment variables
+  console.log(`Operating in ${ENVIRONMENT} environment`);
+};
+```
+
+### 3. Error Handling and Logging
+
+```typescript
+import { Logger } from "@aws-lambda-powertools/logger";
+
+const logger = new Logger({ serviceName: "myService" });
+
+export const handler = async (event) => {
+  try {
+    logger.info("Processing event", { event });
+
+    // Your business logic
+    const result = await processData(event);
+
+    logger.info("Processing successful", { result });
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error) {
+    logger.error("Processing failed", { error });
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Internal server error",
+        requestId: logger.getLambdaContext()?.awsRequestId,
+      }),
+    };
+  }
+};
+```
+
+### 4. Memory and Timeout Configuration
+
+Choose the right memory allocation:
+
+```yaml
+# serverless.yml
+functions:
+  api:
+    handler: handler.main
+    memorySize: 1024 # MB (128-10240)
+    timeout: 30 # seconds (1-900)
+    environment:
+      TABLE_NAME: ${self:custom.tableName}
+```
+
+**Pro tip:** More memory = faster CPU, which can reduce execution time!
+
+### 5. Leverage Lambda Layers
+
+Share code and dependencies across functions:
+
+```yaml
+# serverless.yml
+layers:
+  dependencies:
+    path: layers/dependencies
+    compatibleRuntimes:
+      - nodejs20.x
+
+functions:
+  api:
+    handler: handler.main
+    layers:
+      - { Ref: DependenciesLambdaLayer }
+```
+
+## Cost Optimization
+
+### 1. Right-Size Your Functions
+
+```typescript
+// Monitor and adjust based on CloudWatch metrics
+const metrics = {
+  duration: "Execution time",
+  memoryUsed: "Peak memory usage",
+  billedDuration: "Rounded up execution time",
+};
+```
+
+### 2. Use Provisioned Concurrency for Predictable Traffic
+
+```yaml
+functions:
+  api:
+    handler: handler.main
+    provisionedConcurrency: 5 # Pre-warm 5 instances
+```
+
+### 3. Implement Caching
+
+```typescript
+// In-memory cache for repeated invocations
+const cache = new Map();
+
+export const handler = async (event) => {
+  const cacheKey = event.id;
+
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey);
+  }
+
+  const result = await fetchData(event.id);
+  cache.set(cacheKey, result);
+
+  return result;
+};
+```
+
+## Integration Patterns
+
+### API Gateway Integration
+
+```typescript
+export const handler = async (event: APIGatewayProxyEvent) => {
+  const { httpMethod, path, body } = event;
+
+  switch (httpMethod) {
+    case "GET":
+      return handleGet(event);
+    case "POST":
+      return handlePost(JSON.parse(body || "{}"));
+    default:
+      return {
+        statusCode: 405,
+        body: JSON.stringify({ error: "Method not allowed" }),
+      };
+  }
+};
+```
+
+### EventBridge Integration
+
+```typescript
+import { EventBridgeEvent } from "aws-lambda";
+
+interface MyEvent {
+  action: string;
+  data: Record<string, any>;
+}
+
+export const handler = async (event: EventBridgeEvent<string, MyEvent>) => {
+  const { action, data } = event.detail;
+
+  console.log(`Processing ${action} event`, data);
+
+  // Handle event
+  await processEvent(action, data);
+};
+```
+
+### SQS Integration
+
+```typescript
+import { SQSEvent } from "aws-lambda";
+
+export const handler = async (event: SQSEvent) => {
+  for (const record of event.Records) {
+    try {
+      const message = JSON.parse(record.body);
+      await processMessage(message);
+
+      // Message will be deleted automatically on success
+    } catch (error) {
+      console.error("Failed to process message", error);
+      // Message will be retried or sent to DLQ
+      throw error;
+    }
+  }
+};
+```
+
+## Security Best Practices
+
+### 1. Use IAM Roles
+
+```yaml
+functions:
+  api:
+    handler: handler.main
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:us-east-1:*:table/MyTable
+```
+
+### 2. Encrypt Environment Variables
+
+```yaml
+functions:
+  api:
+    handler: handler.main
+    environment:
+      API_KEY: ${ssm:/myapp/api-key~true} # Encrypted in SSM
+```
+
+### 3. Validate Input
+
+```typescript
+import Joi from "joi";
+
+const schema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+});
+
+export const handler = async (event) => {
+  const { error, value } = schema.validate(JSON.parse(event.body));
+
+  if (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: error.details }),
+    };
+  }
+
+  // Process validated data
+  return processData(value);
+};
+```
+
+## Monitoring and Debugging
+
+### CloudWatch Insights Queries
+
+```sql
+-- Find slowest invocations
+fields @timestamp, @duration
+| filter @type = "REPORT"
+| sort @duration desc
+| limit 20
+
+-- Error analysis
+fields @timestamp, @message
+| filter @message like /ERROR/
+| stats count() by bin(5m)
+```
+
+### X-Ray Tracing
+
+```typescript
+import AWSXRay from "aws-xray-sdk-core";
+const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+
+export const handler = async (event) => {
+  const segment = AWSXRay.getSegment();
+  const subsegment = segment.addNewSubsegment("processing");
+
+  try {
+    await processData(event);
+    subsegment.close();
+  } catch (error) {
+    subsegment.addError(error);
+    subsegment.close();
+    throw error;
+  }
+};
+```
+
+## Advanced Patterns
+
+### Parallel Processing with Promise.all
+
+```typescript
+export const handler = async (event) => {
+  const tasks = event.items.map((item) => processItem(item));
+
+  try {
+    // Process all items in parallel
+    const results = await Promise.all(tasks);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        processed: results.length,
+        results,
+      }),
+    };
+  } catch (error) {
+    console.error("Parallel processing failed", error);
+    throw error;
+  }
+};
+```
+
+### Fan-Out Pattern with SNS
+
+```typescript
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+
+const sns = new SNSClient({ region: process.env.AWS_REGION });
+
+export const handler = async (event) => {
+  const topicArn = process.env.TOPIC_ARN;
+
+  // Fan out to multiple subscribers
+  await sns.send(
+    new PublishCommand({
+      TopicArn: topicArn,
+      Message: JSON.stringify(event),
+      MessageAttributes: {
+        eventType: {
+          DataType: "String",
+          StringValue: event.type,
+        },
+      },
+    })
+  );
+
+  return { statusCode: 200, body: "Message published" };
+};
+```
+
+### Step Functions Integration
+
+```typescript
+import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
+
+const stepFunctions = new SFNClient({ region: process.env.AWS_REGION });
+
+export const handler = async (event) => {
+  const stateMachineArn = process.env.STATE_MACHINE_ARN;
+
+  const execution = await stepFunctions.send(
+    new StartExecutionCommand({
+      stateMachineArn,
+      input: JSON.stringify(event),
+      name: `execution-${Date.now()}`,
+    })
+  );
+
+  return {
+    statusCode: 202,
+    body: JSON.stringify({
+      executionArn: execution.executionArn,
+      message: "Workflow started",
+    }),
+  };
+};
+```
+
+## Testing Strategies
+
+### Unit Testing with Jest
+
+```typescript
+// handler.test.ts
+import { handler } from "./handler";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
+// Mock AWS SDK
+jest.mock("@aws-sdk/client-dynamodb");
+
+describe("Lambda Handler", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should process event successfully", async () => {
+    const mockEvent = {
+      body: JSON.stringify({ name: "Test" }),
+    };
+
+    const response = await handler(mockEvent);
+
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body).message).toBe("Success");
+  });
+
+  it("should handle errors gracefully", async () => {
+    const mockEvent = {
+      body: "invalid json",
+    };
+
+    const response = await handler(mockEvent);
+
+    expect(response.statusCode).toBe(400);
+  });
+});
+```
+
+### Integration Testing
+
+```typescript
+// integration.test.ts
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+
+const lambda = new LambdaClient({ region: "us-east-1" });
+
+describe("Lambda Integration Tests", () => {
+  it("should invoke lambda and return success", async () => {
+    const payload = { userId: "123", action: "getData" };
+
+    const result = await lambda.send(
+      new InvokeCommand({
+        FunctionName: "my-function",
+        Payload: JSON.stringify(payload),
+      })
+    );
+
+    const response = JSON.parse(new TextDecoder().decode(result.Payload));
+
+    expect(response.statusCode).toBe(200);
+  });
+});
+```
+
+### Local Testing with SAM CLI
+
+```bash
+# Start local API
+sam local start-api --port 3000
+
+# Invoke function locally
+sam local invoke MyFunction --event events/test-event.json
+
+# Generate sample events
+sam local generate-event apigateway aws-proxy > event.json
+```
+
+## Performance Optimization
+
+### Connection Pooling
+
+```typescript
+import { createPool } from "mysql2/promise";
+
+// Reuse connection pool across invocations
+const pool = createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  connectionLimit: 10,
+  waitForConnections: true,
+});
+
+export const handler = async (event) => {
+  const connection = await pool.getConnection();
+
+  try {
+    const [rows] = await connection.query("SELECT * FROM users WHERE id = ?", [
+      event.userId,
+    ]);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(rows[0]),
+    };
+  } finally {
+    connection.release();
+  }
+};
+```
+
+### Lambda SnapStart (Java)
+
+```java
+// Enable SnapStart for faster cold starts (Java 11+)
+@Handler
+public class MyHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    // Initialize during snapshot creation
+    private static final AmazonDynamoDB dynamoDB = AmazonDynamoDBClientBuilder
+        .standard()
+        .build();
+
+    @Override
+    public APIGatewayProxyResponseEvent handleRequest(
+        APIGatewayProxyRequestEvent input,
+        Context context
+    ) {
+        // Handler logic
+        return new APIGatewayProxyResponseEvent()
+            .withStatusCode(200)
+            .withBody("Response");
+    }
+}
+```
+
+### Response Streaming (Node.js 18+)
+
+```typescript
+import { Writable } from "stream";
+
+export const handler = awslambda.streamifyResponse(
+  async (event, responseStream, context) => {
+    const httpResponseMetadata = {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Custom-Header": "streaming-response",
+      },
+    };
+
+    responseStream = awslambda.HttpResponseStream.from(
+      responseStream,
+      httpResponseMetadata
+    );
+
+    // Stream data in chunks
+    for (let i = 0; i < 10; i++) {
+      responseStream.write(JSON.stringify({ chunk: i }) + "\n");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    responseStream.end();
+  }
+);
+```
+
+## Real-World Use Cases
+
+### Image Processing Pipeline
+
+```typescript
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
+import sharp from "sharp";
+
+const s3 = new S3Client({ region: process.env.AWS_REGION });
+
+export const handler = async (event) => {
+  const bucket = event.Records[0].s3.bucket.name;
+  const key = decodeURIComponent(event.Records[0].s3.object.key);
+
+  // Download image from S3
+  const { Body } = await s3.send(
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    })
+  );
+
+  const imageBuffer = await streamToBuffer(Body);
+
+  // Process image - create thumbnails
+  const sizes = [
+    { name: "thumb", width: 150 },
+    { name: "medium", width: 500 },
+    { name: "large", width: 1000 },
+  ];
+
+  await Promise.all(
+    sizes.map(async (size) => {
+      const resized = await sharp(imageBuffer)
+        .resize(size.width)
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      const outputKey = key.replace(/^uploads\//, `processed/${size.name}/`);
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: outputKey,
+          Body: resized,
+          ContentType: "image/jpeg",
+        })
+      );
+    })
+  );
+
+  return { statusCode: 200, message: "Images processed" };
+};
+
+async function streamToBuffer(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+```
+
+### Scheduled Data Backup
+
+```typescript
+import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { gzip } from "zlib";
+import { promisify } from "util";
+
+const gzipAsync = promisify(gzip);
+const dynamodb = new DynamoDBClient({ region: process.env.AWS_REGION });
+const s3 = new S3Client({ region: process.env.AWS_REGION });
+
+export const handler = async (event) => {
+  const tableName = process.env.TABLE_NAME;
+  const backupBucket = process.env.BACKUP_BUCKET;
+
+  // Scan entire table
+  let items = [];
+  let lastEvaluatedKey;
+
+  do {
+    const { Items, LastEvaluatedKey } = await dynamodb.send(
+      new ScanCommand({
+        TableName: tableName,
+        ExclusiveStartKey: lastEvaluatedKey,
+      })
+    );
+
+    items = items.concat(Items);
+    lastEvaluatedKey = LastEvaluatedKey;
+  } while (lastEvaluatedKey);
+
+  // Compress data
+  const data = JSON.stringify(items);
+  const compressed = await gzipAsync(data);
+
+  // Upload to S3
+  const timestamp = new Date().toISOString();
+  const key = `backups/${tableName}/${timestamp}.json.gz`;
+
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: backupBucket,
+      Key: key,
+      Body: compressed,
+      ContentType: "application/gzip",
+      Metadata: {
+        itemCount: items.length.toString(),
+        timestamp,
+      },
+    })
+  );
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Backup completed",
+      items: items.length,
+      location: `s3://${backupBucket}/${key}`,
+    }),
+  };
+};
+```
+
+### Webhook Handler with Rate Limiting
+
+```typescript
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+
+const dynamodb = new DynamoDBClient({ region: process.env.AWS_REGION });
+const RATE_LIMIT_TABLE = process.env.RATE_LIMIT_TABLE;
+
+export const handler = async (event) => {
+  const clientId = event.requestContext.identity.sourceIp;
+  const now = Math.floor(Date.now() / 1000);
+  const window = 60; // 1 minute window
+  const maxRequests = 100;
+
+  try {
+    // Atomic increment with expiration
+    const result = await dynamodb.send(
+      new UpdateItemCommand({
+        TableName: RATE_LIMIT_TABLE,
+        Key: {
+          clientId: { S: clientId },
+          window: { N: (now - (now % window)).toString() },
+        },
+        UpdateExpression: "ADD requestCount :inc SET expiresAt = :exp",
+        ExpressionAttributeValues: {
+          ":inc": { N: "1" },
+          ":exp": { N: (now + window).toString() },
+        },
+        ReturnValues: "ALL_NEW",
+      })
+    );
+
+    const requestCount = parseInt(result.Attributes.requestCount.N);
+
+    if (requestCount > maxRequests) {
+      return {
+        statusCode: 429,
+        body: JSON.stringify({
+          error: "Rate limit exceeded",
+          retryAfter: window,
+        }),
+      };
+    }
+
+    // Process webhook
+    const payload = JSON.parse(event.body);
+    await processWebhook(payload);
+
+    return {
+      statusCode: 200,
+      headers: {
+        "X-RateLimit-Limit": maxRequests.toString(),
+        "X-RateLimit-Remaining": (maxRequests - requestCount).toString(),
+      },
+      body: JSON.stringify({ message: "Webhook processed" }),
+    };
+  } catch (error) {
+    console.error("Rate limiting error", error);
+    throw error;
+  }
+};
+
+async function processWebhook(payload) {
+  // Your webhook processing logic
+  console.log("Processing webhook:", payload);
+}
+```
+
+## Deployment Best Practices
+
+### Infrastructure as Code with CDK
+
+```typescript
+// lambda-stack.ts
+import * as cdk from "aws-cdk-lib";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as apigateway from "aws-cdk-lib/aws-apigateway";
+
+export class LambdaStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Lambda function
+    const apiFunction = new lambda.Function(this, "ApiFunction", {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: "index.handler",
+      code: lambda.Code.fromAsset("lambda"),
+      memorySize: 1024,
+      timeout: cdk.Duration.seconds(30),
+      environment: {
+        TABLE_NAME: "my-table",
+        LOG_LEVEL: "INFO",
+      },
+      tracing: lambda.Tracing.ACTIVE,
+      reservedConcurrentExecutions: 100,
+    });
+
+    // API Gateway
+    const api = new apigateway.RestApi(this, "MyApi", {
+      restApiName: "My Service API",
+      deployOptions: {
+        stageName: "prod",
+        throttlingBurstLimit: 100,
+        throttlingRateLimit: 50,
+      },
+    });
+
+    const integration = new apigateway.LambdaIntegration(apiFunction);
+    api.root.addMethod("POST", integration);
+  }
+}
+```
+
+### Blue-Green Deployments
+
+```yaml
+# serverless.yml
+service: my-service
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  deploymentMethod: direct
+
+functions:
+  api:
+    handler: handler.main
+    # Gradual deployment with traffic shifting
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alarms:
+        - ApiErrorAlarm
+      hooks:
+        beforeAllowTraffic: "validateDeployment"
+        afterAllowTraffic: "cleanupOldVersions"
+
+resources:
+  Resources:
+    ApiErrorAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-api-errors
+        ComparisonOperator: GreaterThanThreshold
+        EvaluationPeriods: 2
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Period: 60
+        Statistic: Sum
+        Threshold: 10
+```
+
+### CI/CD Pipeline with GitHub Actions
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Lambda
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy with Serverless
+        run: npx serverless deploy --stage prod
+```
+
+## Conclusion
+
+AWS Lambda is a powerful tool for building scalable, cost-effective applications. By following these best practices, you can:
+
+- **Optimize performance** - Reduce cold starts and improve response times
+- **Minimize costs** - Use efficient resource allocation and caching strategies
+- **Build secure applications** - Implement proper IAM roles and input validation
+- **Monitor effectively** - Use CloudWatch and X-Ray for observability
+- **Scale automatically** - Handle millions of requests without infrastructure management
+- **Deploy confidently** - Use IaC and CI/CD for reliable deployments
+
+Whether you're building APIs, processing data, or handling events, Lambda provides the flexibility and scalability needed for modern applications.
+
+Start experimenting with Lambda today and experience the benefits of serverless computing!
+

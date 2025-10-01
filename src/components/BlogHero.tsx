@@ -48,7 +48,7 @@ export default function BlogHero() {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center pt-2">
               <Link href="/posts">
                 <RainbowButton size="default" className="text-sm">
-                  Explore Articles
+                  Explore Blog Posts
                 </RainbowButton>
               </Link>
               <Link

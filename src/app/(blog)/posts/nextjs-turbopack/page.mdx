@@ -1,0 +1,88 @@
+---
+title: Getting Started with Next.js 15 and Turbopack
+date: 2025-01-15
+tags: ["Next.js", "React", "Turbopack"]
+description: Learn how to leverage the power of Next.js 15 with Turbopack for blazing fast development experience and optimized production builds.
+---
+
+# Getting Started with Next.js 15 and Turbopack
+
+Next.js 15 introduces Turbopack as the default development server, bringing unprecedented speed improvements to your development workflow. In this comprehensive guide, we'll explore how to get started and make the most of these powerful tools.
+
+## What is Turbopack?
+
+Turbopack is a next-generation bundler written in Rust, designed to replace Webpack in Next.js applications. It offers:
+
+- **10x faster startup time** compared to Webpack
+- **Incremental compilation** for instant updates
+- **Built-in HMR** (Hot Module Replacement) that just works
+- **Optimized for large codebases** with thousands of modules
+
+## Key Features of Next.js 15
+
+### 1. Enhanced Performance
+
+Next.js 15 comes with significant performance improvements:
+
+```typescript
+// app/page.tsx
+export default function Page() {
+  return (
+    <div>
+      <h1>Welcome to Next.js 15</h1>
+      <p>Experience the speed of Turbopack</p>
+    </div>
+  );
+}
+```
+
+### 2. Server Components by Default
+
+All components are Server Components by default, reducing client-side JavaScript:
+
+```typescript
+// This runs on the server
+async function getData() {
+  const res = await fetch("https://api.example.com/data");
+  return res.json();
+}
+
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+### 3. Improved Routing
+
+The App Router continues to evolve with better patterns:
+
+```typescript
+// app/blog/[slug]/page.tsx
+export default function BlogPost({ params }: { params: { slug: string } }) {
+  return <article>Post: {params.slug}</article>;
+}
+```
+
+## Getting Started
+
+To create a new Next.js 15 project with Turbopack:
+
+```bash
+npx create-next-app@latest my-app --turbopack
+cd my-app
+npm run dev
+```
+
+## Performance Tips
+
+1. **Use Server Components** - Keep client components minimal
+2. **Optimize Images** - Use the built-in Image component
+3. **Leverage Static Generation** - Pre-render pages when possible
+4. **Code Splitting** - Turbopack handles this automatically
+
+## Conclusion
+
+Next.js 15 with Turbopack represents a significant leap forward in web development tooling. The combination of speed, developer experience, and production optimization makes it an excellent choice for modern web applications.
+
+Start experimenting with these tools today and experience the difference in your development workflow!

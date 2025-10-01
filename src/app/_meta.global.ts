@@ -1,10 +1,10 @@
 export default {
   index: {
-    title: "home",
+    title: "Home",
     type: "page",
   },
   posts: {
-    title: "posts",
+    title: "Posts",
     type: "page",
   },
 
