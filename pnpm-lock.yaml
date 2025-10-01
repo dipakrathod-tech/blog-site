@@ -54,7 +54,7 @@ importers:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
       react-icons:
-        specifier: ^4.11.0
+        specifier: ^4.12.0
         version: 4.12.0(react@19.1.0)
       tailwind-merge:
         specifier: ^3.3.1

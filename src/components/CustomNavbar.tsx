@@ -4,6 +4,7 @@ import { PageMapItem } from "nextra";
 import { normalizePages } from "nextra/normalize-pages";
 import { FC, ReactNode } from "react";
 import { CustomNavbarLink } from "./CustomNavbarLink";
+import { ExternalLink } from "lucide-react";
 
 type CustomNavbarProps = {
   children?: ReactNode;
@@ -12,11 +13,11 @@ type CustomNavbarProps = {
 
 /**
  * Custom Navbar component compatible with Nextra Blog theme
- * 
+ *
  * This component takes the same props as Nextra's Navbar:
  * - pageMap: Array of page items from Nextra
  * - children: Optional children (typically ThemeSwitch and Search components)
- * 
+ *
  * Usage:
  * ```tsx
  * <CustomNavbar pageMap={await getPageMap()}>
@@ -43,7 +44,18 @@ export const CustomNavbar: FC<CustomNavbarProps> = ({ children, pageMap }) => {
           {nav.title}
         </CustomNavbarLink>
       ))}
-      
+
+      {/* External links */}
+      <a
+        href="https://docs.dipakrathod.me"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="x:flex x:items-center x:gap-1 x:hover:opacity-60 x:transition-opacity"
+      >
+        Documentation
+        <ExternalLink className="h-3 w-3" />
+      </a>
+
       {/* Render children (Search, ThemeSwitch, etc.) */}
       {children}
     </header>
