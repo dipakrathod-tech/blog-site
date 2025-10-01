@@ -5,14 +5,7 @@ import { OrbitingCircles } from "./ui/orbiting-circles";
 import { RainbowButton } from "./ui/rainbow-button";
 import { AvatarCircles } from "./ui/avatar-circles";
 import authorData from "@/data/author";
-import {
-  FaAws,
-  FaDocker,
-  FaGitAlt,
-  FaLinux,
-  FaPython,
-  FaJava,
-} from "react-icons/fa";
+import { FaDocker, FaGitAlt, FaLinux, FaPython, FaJava } from "react-icons/fa";
 import {
   SiKubernetes,
   SiTerraform,

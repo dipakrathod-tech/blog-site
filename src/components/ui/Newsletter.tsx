@@ -20,7 +20,7 @@ export default function Newsletter({ className }: { className?: string }) {
       await new Promise((res) => setTimeout(res, 700));
       setStatus("success");
       setEmail("");
-    } catch (err) {
+    } catch {
       setStatus("error");
     }
   }

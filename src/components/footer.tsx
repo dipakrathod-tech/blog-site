@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Footer } from "nextra-theme-blog";
 import Newsletter from "@/components/ui/Newsletter";
 import { FaTwitter, FaGithub, FaLinkedin, FaRss } from "react-icons/fa";
 import { cn } from "@/lib/utils";
@@ -9,7 +8,10 @@ import { cn } from "@/lib/utils";
 export default function CustomFooter({ className }: { className?: string }) {
   return (
     <footer
-      className={cn("border-t border-muted/40 bg-background/50 mt-12", className)}
+      className={cn(
+        "border-t border-muted/40 bg-background/50 mt-12",
+        className
+      )}
     >
       <div className="mx-4 px-6 py-12">
         <div className="md:flex md:items-start md:justify-between gap-8">
