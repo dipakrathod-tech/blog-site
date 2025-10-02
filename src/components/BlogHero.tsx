@@ -25,19 +25,19 @@ export default function BlogHero() {
   ];
 
   return (
-    <section className="relative w-full min-h-[calc(100vh-72px)] flex items-center overflow-hidden py-8 md:py-12">
-      <div className="max-w-[95%] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <section className="relative w-full min-h-[50vh] md:min-h-[calc(100vh-72px)] flex items-center overflow-hidden py-6 md:py-12">
+      <div className="max-w-[95%] mx-auto w-full">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           {/* Left Side - Content */}
-          <div className="space-y-6 z-10">
-            <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+          <div className="space-y-4 md:space-y-6 z-10">
+            <div className="space-y-3 md:space-y-4">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight leading-tight">
                 Welcome to{" "}
                 <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
                   My Blog
                 </span>
               </h1>
-              <p className="text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
+              <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl leading-relaxed">
                 Exploring the world of Cloud, DevOps, and modern development
                 patterns. Join me on this journey of continuous learning and
                 innovation.
@@ -45,23 +45,23 @@ export default function BlogHero() {
             </div>
 
             {/* Call to Action */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-start sm:items-center pt-1 md:pt-2">
               <Link href="/posts">
-                <RainbowButton size="default" className="text-sm">
+                <RainbowButton size="default" className="text-xs md:text-sm">
                   Explore Blog Posts
                 </RainbowButton>
               </Link>
               <Link
                 href="https://dipakrathod.me"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors underline"
+                className="text-xs md:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors underline"
               >
                 Learn more about me →
               </Link>
             </div>
 
             {/* Author Section */}
-            <div className="flex items-center gap-3 pt-4 mt-2 border-t border-border">
-              <AvatarCircles avatarUrls={avatars} className="scale-90" />
+            <div className="flex items-center gap-2 md:gap-3 pt-3 md:pt-4 mt-1 md:mt-2 border-t border-border">
+              <AvatarCircles avatarUrls={avatars} className="scale-75 md:scale-90" />
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
                   Written by
@@ -70,7 +70,7 @@ export default function BlogHero() {
                   href={authorData.profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+                  className="text-xs md:text-sm font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {authorData.name}
                 </a>
@@ -79,8 +79,8 @@ export default function BlogHero() {
           </div>
 
           {/* Right Side - Orbiting Circles Animation */}
-          <aside className="hidden lg:flex relative h-[450px] w-full items-center justify-center">
-            <div className="relative flex h-full w-full max-w-[450px] items-center justify-center">
+          <aside className="hidden lg:flex relative h-[400px] xl:h-[450px] w-full items-center justify-center">
+            <div className="relative flex h-full w-full max-w-[400px] xl:max-w-[450px] items-center justify-center">
               {/* Center Icon */}
               <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border bg-background shadow-lg">
                 <BiCodeAlt className="h-8 w-8 text-primary" />
@@ -150,7 +150,7 @@ export default function BlogHero() {
 
       {/* Background Gradient */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-purple-400 opacity-20 blur-[100px]" />
+        <div className="absolute left-0 right-0 top-[-10%] md:top-0 -z-10 m-auto h-[250px] md:h-[310px] w-[250px] md:w-[310px] rounded-full bg-purple-400 opacity-15 md:opacity-20 blur-[80px] md:blur-[100px]" />
       </div>
     </section>
   );
