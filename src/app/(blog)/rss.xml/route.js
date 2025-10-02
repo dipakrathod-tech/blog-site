@@ -2,7 +2,7 @@ import { getPosts } from '../../../lib/get-posts'
  
 const CONFIG = {
   title: 'My Blog',
-  siteUrl: 'http://dipakrathod.me',
+  siteUrl: 'http://blog.dipakrathod.me',
   description: 'Latest blog posts',
   lang: 'en-us'
 }
