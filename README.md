@@ -1,8 +1,6 @@
 # Dipak Rathod's Tech Blog
 
-A modern, responsive blog site built with Next.js 15, Nextra, and TailwindCSS, featuring articles on Cloud computing, DevOps practices, and modern development patterns.
-
-![Blog Preview](public/profile.jpg)
+A modern, responsive blog site built with Next.js 15, Nextra, and TailwindCSS, featuring articles on Cloud computing, DevOps practices, and modern development patterns
 
 ## 🚀 Features
 
