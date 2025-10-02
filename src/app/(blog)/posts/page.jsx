@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Clock, ArrowRight } from "lucide-react";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import authorData from "@/data/author";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import CategorySelector from "@/components/CategorySelector";
 
 export const metadata = {
   title: "Posts",
@@ -72,16 +74,22 @@ export default async function PostsPage() {
     allTags[tag] += 1;
   }
 
+  // Add read time to each post
+  const postsWithReadTime = posts.map((post) => ({
+    ...post,
+    readTime: getPostReadTime(post.route),
+  }));
+
   // Categorize all posts
   const categorizedPosts = {
-    all: posts,
+    all: postsWithReadTime,
     aws: [],
     devops: [],
     development: [],
     challenge: [],
   };
 
-  posts.forEach((post) => {
+  postsWithReadTime.forEach((post) => {
     const categories = categorizePost(post);
     categories.forEach((category) => {
       if (categorizedPosts[category]) {
@@ -190,39 +198,51 @@ export default async function PostsPage() {
             <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
               Popular Tags
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(allTags).map(([tag, count]) => (
-                <Link key={tag} href={`/tags/${tag}`}>
-                  <Badge
-                    variant="outline"
-                    className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
-                  >
-                    {tag} ({count})
-                  </Badge>
-                </Link>
-              ))}
-            </div>
+            <ScrollArea className="w-full">
+              <div className="flex gap-2 pb-4">
+                {Object.entries(allTags).map(([tag, count]) => (
+                  <Link key={tag} href={`/tags/${tag}`}>
+                    <Badge
+                      variant="outline"
+                      className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {tag} ({count})
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
 
-          {/* Categorized Tabs */}
-          <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-8">
-              <TabsTrigger value="all" className="text-sm md:text-base">
-                All ({categorizedPosts.all.length})
-              </TabsTrigger>
-              <TabsTrigger value="aws" className="text-sm md:text-base">
-                AWS ({categorizedPosts.aws.length})
-              </TabsTrigger>
-              <TabsTrigger value="devops" className="text-sm md:text-base">
-                DevOps ({categorizedPosts.devops.length})
-              </TabsTrigger>
-              <TabsTrigger value="development" className="text-sm md:text-base">
-                Development ({categorizedPosts.development.length})
-              </TabsTrigger>
-              <TabsTrigger value="challenge" className="text-sm md:text-base">
-                Challenge ({categorizedPosts.challenge.length})
-              </TabsTrigger>
-            </TabsList>
+          {/* Mobile Category Selector */}
+          <CategorySelector
+            categorizedPosts={categorizedPosts}
+            authorData={authorData}
+          />
+
+          {/* Desktop Categorized Tabs */}
+          <Tabs defaultValue="all" className="w-full hidden md:block">
+            <ScrollArea className="mb-8">
+              <TabsList className="inline-flex w-full min-w-max">
+                <TabsTrigger value="all" className="text-sm md:text-base px-6">
+                  All ({categorizedPosts.all.length})
+                </TabsTrigger>
+                <TabsTrigger value="aws" className="text-sm md:text-base px-6">
+                  AWS ({categorizedPosts.aws.length})
+                </TabsTrigger>
+                <TabsTrigger value="devops" className="text-sm md:text-base px-6">
+                  DevOps ({categorizedPosts.devops.length})
+                </TabsTrigger>
+                <TabsTrigger value="development" className="text-sm md:text-base px-6">
+                  Development ({categorizedPosts.development.length})
+                </TabsTrigger>
+                <TabsTrigger value="challenge" className="text-sm md:text-base px-6">
+                  Challenge ({categorizedPosts.challenge.length})
+                </TabsTrigger>
+              </TabsList>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
 
             {Object.entries(categorizedPosts).map(
               ([category, categoryPosts]) => (

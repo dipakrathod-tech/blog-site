@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Clock, ArrowRight, Tag } from "lucide-react";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import authorData from "@/data/author";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export async function generateMetadata(props) {
   const params = await props.params;
@@ -60,17 +61,20 @@ export default async function TagPage(props) {
         className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
       >
         <CardHeader className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag, tagIndex) => (
-              <Badge
-                key={tagIndex}
-                variant={tag === tagName ? "default" : "secondary"}
-                className="text-xs"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          <ScrollArea className="w-full">
+            <div className="flex gap-2 pb-2">
+              {tags.map((tag, tagIndex) => (
+                <Badge
+                  key={tagIndex}
+                  variant={tag === tagName ? "default" : "secondary"}
+                  className="text-xs whitespace-nowrap"
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
           <CardTitle className="text-xl md:text-2xl line-clamp-2 group-hover:text-primary transition-colors">
             {title}
           </CardTitle>
