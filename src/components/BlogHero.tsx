@@ -61,7 +61,10 @@ export default function BlogHero() {
 
             {/* Author Section */}
             <div className="flex items-center gap-2 md:gap-3 pt-3 md:pt-4 mt-1 md:mt-2 border-t border-border">
-              <AvatarCircles avatarUrls={avatars} className="scale-75 md:scale-90" />
+              <AvatarCircles
+                avatarUrls={avatars}
+                className="scale-75 md:scale-90"
+              />
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
                   Written by
