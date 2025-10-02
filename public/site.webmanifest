@@ -1,0 +1,17 @@
+{
+  "name": "Dipak Rathod Blog",
+  "short_name": "Dipak Blog",
+  "description": "Personal blog by Dipak Rathod - Sharing insights on cloud devOps and modern software development, technology, and programming.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

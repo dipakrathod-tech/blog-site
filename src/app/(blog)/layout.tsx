@@ -4,7 +4,9 @@ import "./../globals.css";
 import Giscus from "@/components/ui/Giscus";
 
 export const metadata = {
-  title: "Blog Example",
+  title: "Blog | Dipak Rathod",
+  description:
+    "Dipak Rathod's technical blog featuring articles on Cloud computing, DevOps automation, AWS services, containerization with Docker, Kubernetes orchestration, and modern software development practices.",
 };
 
 export default async function RootLayout({

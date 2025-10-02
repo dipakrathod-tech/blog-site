@@ -14,6 +14,8 @@ import { CustomNavbarLink } from "./CustomNavbarLink";
 import { ExternalLink, ChevronRight } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { Separator } from "./ui/separator";
+import Image from "next/image";
+import Link from "next/link";
 
 type CustomNavbarProps = {
   children?: ReactNode;
@@ -79,6 +81,20 @@ export const CustomNavbar: FC<CustomNavbarProps> = ({ children, pageMap }) => {
       className="flex items-center justify-between gap-3 w-full relative"
       data-pagefind-ignore="all"
     >
+      {/* Logo - Always visible */}
+      <Link
+        href="/"
+        className="flex items-center hover:opacity-80 transition-opacity"
+      >
+        <Image
+          src="/icon.svg"
+          alt="Logo"
+          width={32}
+          height={32}
+          className="h-8 w-8 dark:filter dark:invert"
+        />
+      </Link>
+
       {/* Desktop Navigation - Hidden on mobile */}
       <nav className="hidden md:flex items-center gap-3 flex-1 justify-end">
         {topLevelNavbarItems.map((nav) => (
@@ -163,6 +179,23 @@ export const CustomNavbar: FC<CustomNavbarProps> = ({ children, pageMap }) => {
         }`}
       >
         <div className="h-full overflow-y-auto flex flex-col">
+          {/* Logo Section - Mobile */}
+          <div className="px-6 py-4 border-b bg-muted/20 shrink-0">
+            <Link
+              href="/"
+              className="flex items-center justify-center hover:opacity-80 transition-opacity"
+              onClick={handleLinkClick}
+            >
+              <Image
+                src="/icon.svg"
+                alt="Logo"
+                width={40}
+                height={40}
+                className="h-10 w-10 dark:filter dark:invert"
+              />
+            </Link>
+          </div>
+
           {/* Utilities Section */}
           <div className="px-6 py-6 border-b bg-muted/30 shrink-0">
             <div className="flex items-center gap-4 justify-center">
