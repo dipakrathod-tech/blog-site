@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     title: "Dipak Rathod - Cloud & DevOps Expert | Tech Blog",
     description:
       "Join Dipak Rathod's journey through Cloud computing, DevOps automation, and modern development. Discover practical insights on AWS, containerization, and software engineering best practices.",
+    url: "https://blog.dipakrathod.me",
   },
   twitter: {
     title: "Dipak Rathod - Cloud & DevOps Expert | Tech Blog",

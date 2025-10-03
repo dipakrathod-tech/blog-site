@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://blog.dipakrathod.me"),
   title: {
     default: "Dipak Rathod - Blog",
     template: "%s | Dipak Rathod",
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://dipakrathod.me",
+    url: "https://blog.dipakrathod.me",
     title: "Dipak Rathod - Cloud & DevOps Tech Blog",
     description:
       "Dipak Rathod's tech blog exploring Cloud computing, DevOps practices, and modern development patterns. Insights on AWS, Docker, Kubernetes, and software engineering.",
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
     shortcut: "/icon.svg",
     apple: "/icon.svg",
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({
@@ -78,8 +79,8 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#000000" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#0f172a" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

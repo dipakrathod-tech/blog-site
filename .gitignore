@@ -43,3 +43,6 @@ next-env.d.ts
 #copilot
 .github
 github
+
+# documentation (internal only)
+/docs

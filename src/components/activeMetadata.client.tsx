@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useActiveMetadata } from "@/hooks/useActiveMetadata";
+import { useActiveMetadata } from "../hooks/useActiveMetadata";
 import type { PageMapItem } from "nextra";
 
 export default function ActiveMetadataClient({
