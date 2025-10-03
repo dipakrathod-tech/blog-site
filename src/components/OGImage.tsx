@@ -5,7 +5,12 @@ interface OGImageProps {
   category?: string;
 }
 
-export function OGImage({ title, description, logoSrc, category }: OGImageProps) {
+export function OGImage({
+  title,
+  description,
+  logoSrc,
+  category,
+}: OGImageProps) {
   return (
     <div
       style={{

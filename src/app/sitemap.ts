@@ -7,7 +7,7 @@ const BASE_URL = "https://blog.dipakrathod.me";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all posts
   const posts = await getPosts();
-  
+
   // Get all unique tags
   const allTags = await getTags();
   const uniqueTags = [...new Set(allTags)];

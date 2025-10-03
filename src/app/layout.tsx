@@ -67,6 +67,9 @@ export const metadata: Metadata = {
     apple: "/icon.svg",
   },
   manifest: "/manifest.webmanifest",
+  verification: {
+    google: "FAAYZMJz8w9uon2ohxSFkGplYRuWzoca0sY0TsMS-j4",
+  },
 };
 
 export default function RootLayout({
